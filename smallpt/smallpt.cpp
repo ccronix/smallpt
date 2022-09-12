@@ -1,8 +1,7 @@
 #include "erand48.h" // pseudo-random number generator, not in <cstdlib>
 #include <cmath>    // smallpt, a Path Tracer by Kevin Beason, 2008
 #include <cstdio>  // Make : g++ -O3 -fopenmp smallpt.cpp -o smallpt
-#include <cstdlib>   //        Remove "-fopenmp" for g++ version < 4.2
-#include <algorithm>
+#include <algorithm>  // Remove "-fopenmp" for g++ version < 4.2
 
 constexpr double Pi = 3.141592653589;
 
@@ -308,11 +307,13 @@ int main(int argc, char* argv[])
         }
     }
 
-    FILE *image;
-    errno_t err = fopen_s(&image, "image.ppm", "w"); // Write image to PPM file.
-    fprintf(image, "P3\n%d %d\n%d\n", width, height, 255);
+    FILE *fp = fopen("image.ppm", "w"); // Write image to PPM file.
+    fprintf(fp, "P3\n%d %d\n%d\n", width, height, 255);
+
     for (int i = 0; i < width * height; i++)
-        fprintf(image, "%d %d %d\n", GammaEncoding(film[i].x), GammaEncoding(film[i].y), GammaEncoding(film[i].z));
+        fprintf(fp, "%d %d %d\n", GammaEncoding(film[i].x), GammaEncoding(film[i].y), GammaEncoding(film[i].z));
+
+    fclose(fp);
 
     return 0;
 }
