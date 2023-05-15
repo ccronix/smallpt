@@ -1,5 +1,6 @@
 #include "erand48.h" // pseudo-random number generator, not in <cstdlib>
 #include <cmath>    // smallpt, a Path Tracer by Kevin Beason, 2008
+#include <ctime>
 #include <cstdio>  // Make : g++ -O3 -fopenmp smallpt.cpp -o smallpt
 #include <algorithm>  // Remove "-fopenmp" for g++ version < 4.2
 
@@ -276,7 +277,7 @@ Color Radiance(const Ray& ray, int depth, unsigned short* sampler)
 
 int main(int argc, char* argv[])
 {
-    int width = 512, height = 512;
+    int width = 1024, height = 1024;
     int samplesPerPixel = argc == 2 ? atoi(argv[1]) / 4 : 10;
 
     // right hand
@@ -284,7 +285,7 @@ int main(int argc, char* argv[])
     Vector3 cx = Vector3(width * .5 / height); // left
     Vector3 cy = (cx.Cross(camera.direction)).Normalize() * .5; // up
     Color* film = new Vector3[width * height];
-
+    clock_t start = clock();
     #pragma omp parallel for schedule(dynamic, 1) // OpenMP
     for (int y = 0; y < height; y++) // Loop over image rows
     {
@@ -298,8 +299,8 @@ int main(int argc, char* argv[])
             for (int s = 0; s < samplesPerPixel; s++)
             {
                 Vector3 direction =
-                    cx * ((x + s / (float) samplesPerPixel) /  width - .5) + 
-                    cy * ((y + s / (float) samplesPerPixel) / height - .5) + camera.direction;
+                    cx * ((x + s / (double) samplesPerPixel) /  width - .5) + 
+                    cy * ((y + s / (double) samplesPerPixel) / height - .5) + camera.direction;
 
                 Li = Li + Radiance(Ray(camera.origin + direction * 140, direction.Normalize()), 0, sampler) / samplesPerPixel;
             }
@@ -307,13 +308,13 @@ int main(int argc, char* argv[])
         }
     }
 
-    FILE *fp = fopen("image.ppm", "w"); // Write image to PPM file.
+    FILE *fp = fopen("imageaaa.ppm", "w"); // Write image to PPM file.
     fprintf(fp, "P3\n%d %d\n%d\n", width, height, 255);
 
     for (int i = 0; i < width * height; i++)
         fprintf(fp, "%d %d %d\n", GammaEncoding(film[i].x), GammaEncoding(film[i].y), GammaEncoding(film[i].z));
 
     fclose(fp);
-
+    printf("\n%f sec\n", (float)(clock() - start) / CLOCKS_PER_SEC);
     return 0;
 }
